@@ -40,7 +40,7 @@ Como jefe de hangar, quiero registrar una nave nueva, para que forme parte de la
 
 Como jefe de hangar, quiero ver las naves registradas, para saber con qué flota cuento.
 
-- **Validación:** dentro de alcance, punto 4 (parte de consulta asignada a E1).
+- **Validación:** dentro de alcance, punto 4 (parte de consulta asignada a E1). La lista de `FlotaScreen` en la spec 01 adelanta parte de esta historia.
 - **Depende de:** HU-1.1.
 
 ### HU-1.3 · Asignar una misión a una nave
@@ -82,7 +82,7 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 
 **Límites de comprobación:**
 - CA-1.3.5 solo se puede comprobar cuando E2 permita registrar la entrada a dique seco.
-- CA-1.3.6 requiere ver el combustible de la nave, que depende de HU-1.2.
+- CA-1.3.6 se comprueba con el combustible que muestra la lista de naves de `FlotaScreen`.
 
 ### HU-1.4 · Impedir una cuarta misión sin revisión
 **Estado:** por refinar. CA-1.3.3 y CA-1.3.4 ya cubren su regla.
@@ -122,7 +122,7 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 
 ## Tickets del sprint
 
-**Requisito previo:** ninguna funcionalidad se implementa sin una spec en `docs/specs`. T-02 y T-03 requieren la spec de HU-1.1, y T-05 y T-06, la de HU-1.3.
+**Spec:** `docs/specs/01-flota-y-misiones.md` cubre HU-1.1 y HU-1.3. T-02, T-03, T-05 y T-06 se implementan según esa spec, y cada criterio se verifica como indica su sección 8.
 
 ### T-01 · Preparar la base del proyecto
 - **Historia:** HU-1.1
@@ -144,7 +144,7 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 - **Dependencias:** T-01.
 - **Definition of Done:**
   - [ ] La validación cubre las reglas de CA-1.1.2, CA-1.1.3, CA-1.1.4, CA-1.1.5, CA-1.1.7 y CA-1.1.8.
-  - [ ] Una nave nueva queda revisada en su fecha de registro y sin misiones desde esa revisión (CA-1.1.6).
+  - [ ] `normalizarNombre` tiene tests con variantes de un mismo nombre (CA-1.1.9).
   - [ ] Los tests de dominio incluyen los límites 0, 100, -1, 101 y 25,5.
   - [ ] `src/dominio/` no importa `react-native` ni `firebase`, y no se usa `any`.
   - [ ] `npm test` y `npx tsc --noEmit` pasan.
@@ -152,10 +152,11 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 ### T-03 · Guardar y registrar una nave desde el teléfono
 - **Historia:** HU-1.1
 - **Tipo:** Datos/Pantalla
-- **Descripción:** capas `src/services/`, `src/screens/` y `src/components/`. Permitir que el jefe registre una nave, que se guarde y que vea la confirmación o el motivo del rechazo.
+- **Descripción:** capas `src/services/`, `src/screens/` y `src/components/`. Permitir que el jefe registre una nave, que se guarde, que vea la confirmación o el motivo del rechazo, y que vea la lista de naves.
 - **Dependencias:** T-01, T-02.
 - **Definition of Done:**
-  - [ ] Un registro válido se guarda y se confirma con sus datos (CA-1.1.1 y CA-1.1.6).
+  - [ ] Un registro válido se guarda con la última revisión en la hora del servidor y se confirma con sus datos (CA-1.1.1 y CA-1.1.6).
+  - [ ] La lista muestra nombre, clase, combustible y fecha de última revisión de cada nave.
   - [ ] Un nombre repetido se rechaza y la nave existente no cambia (CA-1.1.9).
   - [ ] Cada rechazo le indica al jefe el motivo.
   - [ ] La pantalla no llama a Firebase: solo usa `src/services/`.
@@ -168,7 +169,8 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 - **Descripción:** prueba de punta a punta en un teléfono. Comprobar que el registro cumple lo que el jefe de hangar puede observar.
 - **Dependencias:** T-03.
 - **Definition of Done:**
-  - [ ] CA-1.1.1 a CA-1.1.9 se comprobaron en Expo Go.
+  - [ ] CA-1.1.1, CA-1.1.6 y CA-1.1.9 se comprobaron en Expo Go.
+  - [ ] Los demás criterios de HU-1.1 pasan en Vitest, como indica la sección 8 de la spec.
   - [ ] Los defectos encontrados están corregidos o anotados.
   - [ ] `npm test` y `npx tsc --noEmit` pasan.
 
@@ -181,7 +183,7 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
   - [ ] La validación cubre los datos obligatorios, la fecha y la duración (CA-1.3.7 a CA-1.3.12).
   - [ ] Una nave con 2 misiones recibe otra y una con 3 no, sean realizadas o programadas (CA-1.3.2 a CA-1.3.4).
   - [ ] Una nave en reparación no recibe misiones (CA-1.3.5).
-  - [ ] Asignar una misión no cambia el combustible (CA-1.3.6).
+  - [ ] `fechaLocalComoTexto` devuelve la fecha local del teléfono, sin usar UTC.
   - [ ] Los tests de dominio incluyen ayer, hoy y las duraciones 0, 1 y 1,5.
   - [ ] `src/dominio/` no importa `react-native` ni `firebase`, y no se usa `any`.
   - [ ] `npm test` y `npx tsc --noEmit` pasan.
@@ -195,7 +197,7 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
   - [ ] Una misión válida se guarda y se confirma para esa nave (CA-1.3.1).
   - [ ] La cuenta de misiones considera todas las asignadas desde la última revisión.
   - [ ] Una nave con 3 misiones desde su última revisión no recibe otra, no se guarda nada y el jefe ve que necesita una revisión (CA-1.3.3 y CA-1.3.4).
-  - [ ] Guardar una misión no modifica el combustible de la nave.
+  - [ ] Guardar una misión no modifica el combustible de la nave (CA-1.3.6).
   - [ ] Cada rechazo le indica al jefe el motivo.
   - [ ] La pantalla no llama a Firebase: solo usa `src/services/`.
   - [ ] No se usa `any`.
@@ -207,8 +209,9 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 - **Descripción:** prueba de punta a punta en un teléfono. Comprobar que la asignación cumple lo que el jefe de hangar puede observar.
 - **Dependencias:** T-06.
 - **Definition of Done:**
-  - [ ] CA-1.3.1 a CA-1.3.4 y CA-1.3.7 a CA-1.3.12 se comprobaron en Expo Go.
-  - [ ] CA-1.3.5 y CA-1.3.6 quedan cubiertos por tests de dominio y anotados como pendientes de punta a punta hasta que existan E2 y HU-1.2.
+  - [ ] CA-1.3.1, CA-1.3.3 y CA-1.3.6 se comprobaron en Expo Go.
+  - [ ] Los demás criterios de HU-1.3 pasan en Vitest, como indica la sección 8 de la spec.
+  - [ ] CA-1.3.5 queda anotado como pendiente de punta a punta hasta que exista E2.
   - [ ] Los defectos encontrados están corregidos o anotados.
   - [ ] `npm test` y `npx tsc --noEmit` pasan.
 
