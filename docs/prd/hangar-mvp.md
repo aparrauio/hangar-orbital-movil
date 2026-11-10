@@ -43,3 +43,4 @@ Tripulación (ya la gestiona el Centro de Comando), usuarios e inicio de sesión
 6. ¿Las misiones canceladas o abortadas siguen contando para el límite de 3?
 7. ¿Qué hace válida una revisión y basta con que cualquier jefe la registre?
 8. ¿Qué información mínima debe indicarse al asignar una misión?
+9. ¿Una nave puede tener dos misiones con fechas superpuestas?
