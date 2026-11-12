@@ -80,7 +80,7 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 | CA-1.3.10 | una nave que puede recibir misiones | el jefe indica una duración de 0 días | la misión no se asigna y se le informa que el mínimo es 1 día |
 | CA-1.3.11 | una nave que puede recibir misiones | el jefe indica una duración de 1 día | la misión se asigna |
 | CA-1.3.12 | una nave que puede recibir misiones | el jefe indica una duración de 1,5 días | la misión no se asigna y se le informa que debe ser un número entero de días |
-| CA-1.3.13 | una nave con 24 % de combustible | el jefe intenta asignarle una misión | la misión no se asigna y se le informa que la nave tiene menos de 25 % de combustible |
+| CA-1.3.13 | una nave con menos de 25 % de combustible | el jefe intenta asignarle una misión | la misión no se asigna y se le informa que el combustible no alcanza |
 | CA-1.3.14 | una nave con exactamente 25 % de combustible | el jefe le asigna una misión válida | la misión se asigna |
 
 **Límites de comprobación:**

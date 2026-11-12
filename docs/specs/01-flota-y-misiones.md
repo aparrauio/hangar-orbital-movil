@@ -352,7 +352,7 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | `duracion-minima` | La duración mínima es 1 día. |
 | `limite-misiones` | Esta nave ya tiene 3 misiones desde su última revisión. Necesita una revisión antes de recibir otra. |
 | `en-reparacion` | Esta nave está en reparación y no puede recibir misiones. |
-| `combustible-bajo` | Esta nave tiene menos de 25 % de combustible y no puede recibir misiones. |
+| `combustible-bajo` | El combustible de esta nave no alcanza: necesita al menos 25 % para recibir misiones. |
 | Misión asignada | Misión a {destino} asignada a {nombre}. |
 | `conexion` al guardar | No se pudo guardar. Revisa tu conexión e inténtalo de nuevo. |
 | `conexion` al listar | No se pudieron cargar las naves. Revisa tu conexión e inténtalo de nuevo. |
@@ -389,7 +389,7 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | CA-1.3.10 | La app NO DEBE asignar una misión de 0 días y DEBE informar que el mínimo es 1 día. |
 | CA-1.3.11 | La app DEBE aceptar una duración de 1 día. |
 | CA-1.3.12 | La app NO DEBE asignar una misión de 1,5 días y DEBE informar que debe ser un número entero de días. |
-| CA-1.3.13 | Una nave con 24 % de combustible NO DEBE recibir misiones y la app DEBE informar que tiene menos de 25 %. |
+| CA-1.3.13 | Una nave con menos de 25 % de combustible NO DEBE recibir misiones y la app DEBE informar que el combustible no alcanza. |
 | CA-1.3.14 | Una nave con exactamente 25 % de combustible DEBE poder recibir misiones. |
 
 ## 8. Criterio → verificación
@@ -417,7 +417,7 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | CA-1.3.10 | Vitest (dominio) | `validarMision` con `0` |
 | CA-1.3.11 | Vitest (dominio) | `validarMision` con `1` |
 | CA-1.3.12 | Vitest (dominio) | `validarMision` con `1,5` |
-| CA-1.3.13 | Vitest (dominio) y manual en Expo Go | `puedeRecibirMision` con 24 %; registrar una nave con 24 %, intentar asignarle una misión y comprobar el mensaje |
+| CA-1.3.13 | Vitest (dominio) y manual en Expo Go | `puedeRecibirMision` con 0 % y con 24 %; registrar una nave con 24 %, intentar asignarle una misión y comprobar el mensaje |
 | CA-1.3.14 | Vitest (dominio) | `puedeRecibirMision` con 25 % |
 
 ## 9. Ticket → archivos
