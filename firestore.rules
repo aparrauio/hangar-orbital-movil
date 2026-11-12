@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esTextoNoVacio(valor) {
+      return valor is string && valor.trim().size() > 0;
+    }
+
+    function esNaveValida(naveId, datos) {
+      let campos = ['nombre', 'clase', 'combustible', 'enReparacion', 'ultimaRevision', 'creadaEn'];
+      return naveId.matches('^[a-z0-9]+(-[a-z0-9]+)*$')
+        && datos.keys().hasAll(campos)
+        && datos.keys().hasOnly(campos)
+        && esTextoNoVacio(datos.nombre)
+        && datos.clase in ['exploradora', 'carguera', 'transporte']
+        && datos.combustible is int
+        && datos.combustible >= 0
+        && datos.combustible <= 100
+        && datos.enReparacion == false
+        && datos.ultimaRevision == request.time
+        && datos.creadaEn == request.time;
+    }
+
+    // La app exige la fecha local exacta. Aquí se admite un día de margen
+    // porque request.time está en UTC y el teléfono puede ir detrás.
+    function esFechaAdmitida(fecha) {
+      let partes = fecha.split('-');
+      return fecha is string
+        && fecha.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && timestamp.date(int(partes[0]), int(partes[1]), int(partes[2]))
+          >= request.time.date() - duration.value(1, 'd');
+    }
+
+    function esMisionValida(datos) {
+      let campos = ['destino', 'fechaDespegue', 'duracionDias', 'creadaEn'];
+      return datos.keys().hasAll(campos)
+        && datos.keys().hasOnly(campos)
+        && esTextoNoVacio(datos.destino)
+        && esFechaAdmitida(datos.fechaDespegue)
+        && datos.duracionDias is int
+        && datos.duracionDias >= 1
+        && datos.creadaEn == request.time;
+    }
+
+    function naveFueraDeReparacion(naveId) {
+      return get(/databases/$(database)/documents/naves/$(naveId)).data.enReparacion == false;
+    }
+
+    match /naves/{naveId} {
+      allow read: if true;
+      allow create: if esNaveValida(naveId, request.resource.data);
+      allow update, delete: if false;
+
+      match /misiones/{misionId} {
+        allow read: if true;
+        allow create: if esMisionValida(request.resource.data)
+          && naveFueraDeReparacion(naveId);
+        allow update, delete: if false;
+      }
+    }
+  }
+}
