@@ -36,3 +36,4 @@ App móvil para registrar las naves de un hangar, asignarles misiones y saber cu
 - Nunca escribir la configuración de Firebase en el código, solo variables `EXPO_PUBLIC_FIREBASE_*` leídas desde `.env`.
 - Ninguna funcionalidad se implementa sin una spec en `docs/specs`.
 - Ejecutar `npm test` y `npx tsc --noEmit` antes de dar una tarea por terminada.
+- Antes de crear o modificar archivos de src/screens/, src/components/ o src/tema/, lee DESIGN.md y usa sus tokens y componentes.
