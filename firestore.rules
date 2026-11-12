@@ -43,8 +43,11 @@ service cloud.firestore {
         && datos.creadaEn == request.time;
     }
 
-    function naveFueraDeReparacion(naveId) {
-      return get(/databases/$(database)/documents/naves/$(naveId)).data.enReparacion == false;
+    // Fuera de reparación y con al menos 25 % de combustible.
+    function naveAdmiteMision(naveId) {
+      let nave = get(/databases/$(database)/documents/naves/$(naveId)).data;
+      return nave.enReparacion == false
+        && nave.combustible >= 25;
     }
 
     match /naves/{naveId} {
@@ -55,7 +58,7 @@ service cloud.firestore {
       match /misiones/{misionId} {
         allow read: if true;
         allow create: if esMisionValida(request.resource.data)
-          && naveFueraDeReparacion(naveId);
+          && naveAdmiteMision(naveId);
         allow update, delete: if false;
       }
     }

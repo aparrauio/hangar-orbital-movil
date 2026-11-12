@@ -17,6 +17,8 @@ export const MENSAJES_RECHAZO_MISION: Record<MotivoRechazoMision, string> = {
   'limite-misiones':
     'Esta nave ya tiene 3 misiones desde su última revisión. Necesita una revisión antes de recibir otra.',
   'en-reparacion': 'Esta nave está en reparación y no puede recibir misiones.',
+  'combustible-bajo':
+    'El combustible de esta nave no alcanza: necesita al menos 25 % para recibir misiones.',
 };
 
 export function mensajeMisionAsignada(destino: string, nombre: string): string {
