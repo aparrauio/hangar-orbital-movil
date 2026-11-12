@@ -36,12 +36,36 @@ Como jefe de hangar, quiero registrar una nave nueva, para que forme parte de la
 | CA-1.1.9 | una nave registrada con nombre Aurora | el jefe intenta registrar otra nave con nombre Aurora | la nueva nave no se registra, se le informa que el nombre ya existe y Aurora no cambia |
 
 ### HU-1.2 · Ver las naves registradas
-**Estado:** por refinar.
+**Estado:** refinada para el sprint de interfaz. Spec: `docs/specs/02-interfaz.md` (tickets T-09 a T-12).
 
-Como jefe de hangar, quiero ver las naves registradas, para saber con qué flota cuento.
+Como jefe de hangar, quiero ver las naves registradas, para saber con qué flota cuento y cuáles pueden recibir misiones.
 
-- **Validación:** dentro de alcance, punto 4 (parte de consulta asignada a E1). La lista de `FlotaScreen` en la spec 01 adelanta parte de esta historia.
-- **Depende de:** HU-1.1.
+- **Validación:** dentro de alcance, punto 4 (parte de consulta asignada a E1). La lista de `FlotaScreen` en la spec 01 adelantó parte de esta historia.
+- **Depende de:** HU-1.1 y HU-1.3.
+
+**Reglas del PRD:**
+- Una nave admite como máximo 3 misiones entre revisiones.
+- Una nave con menos de 25 % de combustible no puede recibir misiones. Con exactamente 25 % sí puede.
+- Una nave en dique seco no puede recibir misiones.
+- [SUPUESTO] Cuando una nave no puede recibir misiones, la app indica el motivo.
+
+**Criterios de aceptación:**
+
+| Id | DADO | CUANDO | ENTONCES |
+|---|---|---|---|
+| CA-1.2.1 | naves registradas | el jefe abre la flota | cada nave muestra nombre, clase, combustible, misiones desde su revisión ("N de 3") y fecha de última revisión |
+| CA-1.2.2 | una nave con 25 % o más de combustible, menos de 3 misiones desde su revisión y fuera de reparación | el jefe ve la lista | la nave muestra "Puede recibir misiones" y permite asignarle una misión |
+| CA-1.2.3 | una nave con menos de 25 % de combustible | el jefe ve la lista | la nave muestra "Combustible bajo" y no permite asignarle una misión |
+| CA-1.2.4 | una nave con exactamente 25 % de combustible y menos de 3 misiones | el jefe ve la lista | la nave muestra "Puede recibir misiones" |
+| CA-1.2.5 | una nave con 3 misiones desde su revisión | el jefe ve la lista | la nave muestra "Necesita revisión" y no permite asignarle una misión |
+| CA-1.2.6 | una nave en reparación | el jefe ve la lista | la nave muestra "En reparación" y no permite asignarle una misión |
+| CA-1.2.7 | la lista se está cargando | el jefe abre la flota | se muestra un indicador de carga con un mensaje, no la lista vacía |
+| CA-1.2.8 | no hay naves registradas | el jefe abre la flota | se muestra un mensaje de que todavía no hay naves |
+| CA-1.2.9 | la lista no se pudo cargar | el jefe abre la flota sin conexión | se muestra un mensaje de error con la acción "Reintentar", que vuelve a cargar la lista |
+
+**Límites de comprobación:**
+- CA-1.2.6 solo se puede comprobar de punta a punta cuando E2 permita registrar la entrada a dique seco.
+- CA-1.2.8 necesita un proyecto de Firestore sin naves, porque las reglas no permiten borrarlas.
 
 ### HU-1.3 · Asignar una misión a una nave
 **Estado:** refinada para el sprint.
