@@ -50,11 +50,12 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 
 - **Validación:** dentro de alcance, punto 3. La misión cuenta desde que se asigna y no cambia el combustible de la nave.
 - **Depende de:** HU-1.1.
-- **Puntos abiertos que la afectan:** 4 (nave con menos de 25 %) y 9 (misiones con fechas superpuestas).
+- **Puntos abiertos que la afectan:** 9 (misiones con fechas superpuestas). El punto 4 (nave con menos de 25 %) lo resolvió el cliente el 2026-11-12.
 
 **Reglas del PRD:**
 - Una nave admite como máximo 3 misiones entre revisiones: si ya tiene 3, no recibe otra hasta su próxima revisión.
 - Cuentan todas las misiones asignadas desde la última revisión, ya realizadas o programadas.
+- Una nave con menos de 25 % de combustible no puede recibir misiones. Con exactamente 25 % sí puede. Las misiones que ya tenía siguen contando.
 - Una nave en dique seco no puede recibir misiones.
 - Asignar una misión no cambia el combustible: se actualiza a mano.
 
@@ -79,6 +80,8 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 | CA-1.3.10 | una nave que puede recibir misiones | el jefe indica una duración de 0 días | la misión no se asigna y se le informa que el mínimo es 1 día |
 | CA-1.3.11 | una nave que puede recibir misiones | el jefe indica una duración de 1 día | la misión se asigna |
 | CA-1.3.12 | una nave que puede recibir misiones | el jefe indica una duración de 1,5 días | la misión no se asigna y se le informa que debe ser un número entero de días |
+| CA-1.3.13 | una nave con 24 % de combustible | el jefe intenta asignarle una misión | la misión no se asigna y se le informa que la nave tiene menos de 25 % de combustible |
+| CA-1.3.14 | una nave con exactamente 25 % de combustible | el jefe le asigna una misión válida | la misión se asigna |
 
 **Límites de comprobación:**
 - CA-1.3.5 solo se puede comprobar cuando E2 permita registrar la entrada a dique seco.
@@ -215,6 +218,21 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
   - [ ] Los defectos encontrados están corregidos o anotados.
   - [ ] `npm test` y `npx tsc --noEmit` pasan.
 
+### T-08 · Combustible mínimo para recibir misiones
+- **Historia:** HU-1.3
+- **Tipo:** Modelo/Dominio
+- **Descripción:** capas `src/dominio/` y `src/screens/`, y `firestore.rules`. Impedir que una nave con menos de 25 % de combustible reciba misiones, según la decisión del cliente del 2026-11-12 (hallazgo H-02 de `docs/AUDITORIA.md`).
+- **Dependencias:** T-05, T-06.
+- **Definition of Done:**
+  - [ ] `puedeRecibirMision` rechaza con `combustible-bajo` una nave con 24 % y admite una con 25 % (CA-1.3.13 y CA-1.3.14).
+  - [ ] Los motivos se evalúan en el orden de la spec: reparación, combustible y límite de misiones.
+  - [ ] El combustible no cambia el conteo de misiones desde la última revisión.
+  - [ ] El jefe ve el mensaje de `combustible-bajo` de la spec.
+  - [ ] `firestore.rules` rechaza misiones para naves con menos de 25 %.
+  - [ ] CA-1.3.13 se comprobó en Expo Go.
+  - [ ] `src/dominio/` no importa `react-native` ni `firebase`, y no se usa `any`.
+  - [ ] `npm test` y `npx tsc --noEmit` pasan.
+
 ### Orden de ejecución sugerido
 1. T-01
 2. T-02
@@ -222,3 +240,4 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 4. T-04
 5. T-06
 6. T-07
+7. T-08
