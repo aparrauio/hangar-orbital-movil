@@ -10,6 +10,7 @@ import {
 import {
   type MotivoRechazoMision,
   puedeRecibirMision,
+  type ResultadoPuedeRecibirMision,
 } from '../dominio/puedeRecibirMision';
 import {
   type CodigoErrorMision,
@@ -18,7 +19,17 @@ import {
 import { db } from '../firebase/config';
 import type { EntradaMision } from '../types/mision';
 import type { Nave } from '../types/nave';
-import { convertirNave } from './navesService';
+import { convertirNave, listarNaves } from './navesService';
+
+export interface NaveConAptitud {
+  nave: Nave;
+  misionesDesdeRevision: number;
+  aptitud: ResultadoPuedeRecibirMision;
+}
+
+export type ResultadoListarNavesConAptitud =
+  | { ok: true; naves: NaveConAptitud[] }
+  | { ok: false; error: { tipo: 'conexion' } };
 
 export type ErrorCrearMision =
   | { tipo: 'validacion'; errores: CodigoErrorMision[] }
@@ -38,6 +49,29 @@ export async function contarMisionesDesdeRevision(
     ),
   );
   return resumen.data().count;
+}
+
+export async function listarNavesConAptitud(): Promise<ResultadoListarNavesConAptitud> {
+  const listado = await listarNaves();
+  if (!listado.ok) {
+    return listado;
+  }
+
+  try {
+    const naves = await Promise.all(
+      listado.naves.map(async (nave) => {
+        const misionesDesdeRevision = await contarMisionesDesdeRevision(nave);
+        return {
+          nave,
+          misionesDesdeRevision,
+          aptitud: puedeRecibirMision(nave, misionesDesdeRevision),
+        };
+      }),
+    );
+    return { ok: true, naves };
+  } catch {
+    return { ok: false, error: { tipo: 'conexion' } };
+  }
 }
 
 export async function crearMision(

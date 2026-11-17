@@ -25,6 +25,7 @@ Tripulación (ya la gestiona el Centro de Comando), usuarios e inicio de sesión
 - Una nave admite como máximo 3 misiones entre revisiones: si ya tiene 3, no recibe otra hasta su próxima revisión.
 - Cuentan todas las misiones asignadas desde la última revisión, ya realizadas o programadas.
 - Una nave recién registrada cuenta como revisada en su fecha de registro.
+- Una nave con menos de 25 % de combustible no puede recibir misiones. Con exactamente 25 % sí puede. Las misiones que ya tenía siguen contando. (Decisión del cliente, 2026-11-12.)
 - Una nave en dique seco no puede recibir misiones.
 - Asignar una misión no cambia el combustible: se actualiza a mano.
 
@@ -38,7 +39,8 @@ Tripulación (ya la gestiona el Centro de Comando), usuarios e inicio de sesión
 1. Si una nave con misiones programadas pasa revisión, ¿esas misiones siguen contando? Si no cuentan, podría recibir 3 más y encadenar 6 sin otra revisión.
 2. ¿Quién actualiza el combustible, cuándo y qué se indica si el dato no se actualizó desde la última misión?
 3. ¿Se registran los despegues? Sin ese dato no se puede comprobar la métrica de éxito.
-4. ¿Una nave con menos de 25 % puede recibir misiones? ¿Qué pasa con las que ya tenía si baja de ese nivel?
+<!-- El punto abierto 4 (combustible bajo) quedó resuelto en Reglas de negocio el 2026-11-12. Los demás conservan su número porque el backlog y la spec los citan. -->
+
 5. ¿Una nave en dique seco es siempre no apta? ¿Salir de dique seco cuenta como revisión? ¿Qué pasa con sus misiones pendientes?
 6. ¿Las misiones canceladas o abortadas siguen contando para el límite de 3?
 7. ¿Qué hace válida una revisión y basta con que cualquier jefe la registre?

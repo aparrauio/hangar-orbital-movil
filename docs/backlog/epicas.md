@@ -15,6 +15,7 @@ Fuente: `docs/prd/hangar-mvp.md`. Los puntos de alcance corresponden a su secci�
 - Una nave admite como máximo 3 misiones entre revisiones: si ya tiene 3, no recibe otra hasta su próxima revisión.
 - Cuentan todas las misiones asignadas desde la última revisión, ya realizadas o programadas.
 - Una nave recién registrada cuenta como revisada en su fecha de registro.
+- Una nave con menos de 25 % de combustible no puede recibir misiones. Con exactamente 25 % sí puede. Las misiones que ya tenía siguen contando.
 - Una nave en dique seco no puede recibir misiones.
 - Asignar una misión no cambia el combustible: se actualiza a mano.
 

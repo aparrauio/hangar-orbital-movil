@@ -1,6 +1,7 @@
 # Spec 01: flota y misiones
 
 Historias: HU-1.1 (registrar una nave) y HU-1.3 (asignar una misión a una nave).
+Actualizada el 2026-11-12 con la regla de combustible mínimo para recibir misiones (punto abierto 4 del PRD, resuelto).
 Fuentes: `docs/prd/hangar-mvp.md` y `docs/backlog/E1-flota-y-misiones.md`.
 
 ## 1. Modelo en Firestore
@@ -85,8 +86,11 @@ service cloud.firestore {
         && datos.creadaEn == request.time;
     }
 
-    function naveFueraDeReparacion(naveId) {
-      return get(/databases/$(database)/documents/naves/$(naveId)).data.enReparacion == false;
+    // Fuera de reparación y con al menos 25 % de combustible.
+    function naveAdmiteMision(naveId) {
+      let nave = get(/databases/$(database)/documents/naves/$(naveId)).data;
+      return nave.enReparacion == false
+        && nave.combustible >= 25;
     }
 
     match /naves/{naveId} {
@@ -97,7 +101,7 @@ service cloud.firestore {
       match /misiones/{misionId} {
         allow read: if true;
         allow create: if esMisionValida(request.resource.data)
-          && naveFueraDeReparacion(naveId);
+          && naveAdmiteMision(naveId);
         allow update, delete: if false;
       }
     }
@@ -216,15 +220,19 @@ export function fechaLocalComoTexto(fecha: Date): string;
 
 ```ts
 export const MAXIMO_MISIONES_ENTRE_REVISIONES = 3;
+export const COMBUSTIBLE_MINIMO_PARA_MISION = 25;
 
-export type MotivoRechazoMision = 'en-reparacion' | 'limite-misiones';
+export type MotivoRechazoMision =
+  | 'en-reparacion'
+  | 'combustible-bajo'
+  | 'limite-misiones';
 
 export type ResultadoPuedeRecibirMision =
   | { puede: true }
   | { puede: false; motivo: MotivoRechazoMision };
 
 export function puedeRecibirMision(
-  nave: Pick<Nave, 'enReparacion'>,
+  nave: Pick<Nave, 'enReparacion' | 'combustible'>,
   misionesDesdeRevision: number,
 ): ResultadoPuedeRecibirMision;
 ```
@@ -233,7 +241,9 @@ export function puedeRecibirMision(
 - Los valores numéricos se aceptan como enteros solo si cumplen `^-?[0-9]+$`. Así `25,5` y `1,5` dan error de entero, y `-1` da error de rango o de mínimo.
 - `validarNave` devuelve `nombre-invalido` si el nombre normalizado no cumple el patrón de la sección 1.
 - `validarMision` comprueba que la fecha exista en el calendario, por ejemplo rechaza `2026-02-30`. La compara con `hoy` como texto: `hoy` se acepta y una fecha anterior no.
-- `puedeRecibirMision` evalúa primero `enReparacion` y después el límite. Puede recibir con 0, 1 o 2 misiones, y no con 3 o más.
+- `puedeRecibirMision` evalúa en este orden: `enReparacion`, el combustible y el límite de misiones, y devuelve el primer motivo que falle. Puede recibir con 0, 1 o 2 misiones, y no con 3 o más.
+- Con menos de `COMBUSTIBLE_MINIMO_PARA_MISION` (24 % o menos) devuelve `combustible-bajo`. Con exactamente 25 % puede recibir misiones.
+- El combustible solo decide si la nave recibe una misión nueva. Las misiones que ya tenía siguen contando para el límite de 3, aunque el combustible baje de 25 %.
 
 ## 5. Servicios
 
@@ -342,6 +352,7 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | `duracion-minima` | La duración mínima es 1 día. |
 | `limite-misiones` | Esta nave ya tiene 3 misiones desde su última revisión. Necesita una revisión antes de recibir otra. |
 | `en-reparacion` | Esta nave está en reparación y no puede recibir misiones. |
+| `combustible-bajo` | El combustible de esta nave no alcanza: necesita al menos 25 % para recibir misiones. |
 | Misión asignada | Misión a {destino} asignada a {nombre}. |
 | `conexion` al guardar | No se pudo guardar. Revisa tu conexión e inténtalo de nuevo. |
 | `conexion` al listar | No se pudieron cargar las naves. Revisa tu conexión e inténtalo de nuevo. |
@@ -378,6 +389,8 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | CA-1.3.10 | La app NO DEBE asignar una misión de 0 días y DEBE informar que el mínimo es 1 día. |
 | CA-1.3.11 | La app DEBE aceptar una duración de 1 día. |
 | CA-1.3.12 | La app NO DEBE asignar una misión de 1,5 días y DEBE informar que debe ser un número entero de días. |
+| CA-1.3.13 | Una nave con menos de 25 % de combustible NO DEBE recibir misiones y la app DEBE informar que el combustible no alcanza. |
+| CA-1.3.14 | Una nave con exactamente 25 % de combustible DEBE poder recibir misiones. |
 
 ## 8. Criterio → verificación
 
@@ -404,6 +417,8 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | CA-1.3.10 | Vitest (dominio) | `validarMision` con `0` |
 | CA-1.3.11 | Vitest (dominio) | `validarMision` con `1` |
 | CA-1.3.12 | Vitest (dominio) | `validarMision` con `1,5` |
+| CA-1.3.13 | Vitest (dominio) y manual en Expo Go | `puedeRecibirMision` con 0 % y con 24 %; registrar una nave con 24 %, intentar asignarle una misión y comprobar el mensaje |
+| CA-1.3.14 | Vitest (dominio) | `puedeRecibirMision` con 25 % |
 
 ## 9. Ticket → archivos
 
@@ -416,12 +431,12 @@ No se usan librerías de navegación. `App.tsx` guarda con un estado la vista ac
 | T-05 | `src/types/mision.ts`, `src/dominio/validarMision.ts`, `src/dominio/validarMision.test.ts`, `src/dominio/fechaLocalComoTexto.ts`, `src/dominio/fechaLocalComoTexto.test.ts`, `src/dominio/puedeRecibirMision.ts`, `src/dominio/puedeRecibirMision.test.ts` | Ninguno |
 | T-06 | `src/services/misionesService.ts`, `src/screens/MisionScreen.tsx` | `App.tsx`, `src/screens/FlotaScreen.tsx`, `src/screens/mensajes.ts` |
 | T-07 | Ninguno | `docs/backlog/E1-flota-y-misiones.md` (resultado de la prueba) |
+| T-08 | Ninguno | `src/dominio/puedeRecibirMision.ts`, `src/dominio/puedeRecibirMision.test.ts`, `src/screens/mensajes.ts`, `firestore.rules` |
 
 ## 10. Límites conocidos
 
 - **Simultaneidad:** contar y crear no es atómico, porque una transacción del SDK no puede incluir una consulta. Si dos jefes asignan a la vez a una nave con 2 misiones, puede quedar con 4.
 - **Revisión con misiones programadas (punto abierto 1):** contar por `creadaEn` deja de contar las misiones creadas antes de una revisión, aunque aún no se hayan realizado.
-- **Combustible bajo (punto abierto 4):** `puedeRecibirMision` no considera el combustible, así que una nave con menos de 25 % puede recibir misiones.
 - **Fechas superpuestas (punto abierto 9):** no se validan.
 - **Reparación:** `enReparacion` siempre es `false` en este sprint, porque las reglas no permiten modificar naves.
 - **Margen de fecha en las reglas:** las reglas admiten un día antes de la fecha UTC. La fecha exacta la exige la app.

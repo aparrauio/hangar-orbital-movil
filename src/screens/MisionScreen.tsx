@@ -1,9 +1,15 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Boton } from '../components/Boton';
 import { CampoTexto } from '../components/CampoTexto';
+import { InsigniaAptitud } from '../components/InsigniaAptitud';
+import { MedidorCombustible } from '../components/MedidorCombustible';
+import { SelectorFecha } from '../components/SelectorFecha';
+import { entradaSoloDigitos } from '../dominio/entradaSoloDigitos';
 import { fechaLocalComoTexto } from '../dominio/fechaLocalComoTexto';
-import { crearMision } from '../services/misionesService';
-import type { Nave } from '../types/nave';
+import { crearMision, type NaveConAptitud } from '../services/misionesService';
+import { colores, espacio, radio, texto } from '../tema';
 import {
   MENSAJE_ERROR_GUARDAR,
   MENSAJES_ERROR_MISION,
@@ -12,11 +18,20 @@ import {
 } from './mensajes';
 
 interface PropsMisionScreen {
-  nave: Nave;
+  nave: NaveConAptitud;
   alVolver: () => void;
 }
 
-export function MisionScreen({ nave, alVolver }: PropsMisionScreen) {
+function medianocheDeHoy(): Date {
+  const ahora = new Date();
+  return new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+}
+
+export function MisionScreen({
+  nave: naveConAptitud,
+  alVolver,
+}: PropsMisionScreen) {
+  const { nave, aptitud } = naveConAptitud;
   const [destino, setDestino] = useState('');
   const [fechaDespegue, setFechaDespegue] = useState('');
   const [duracionDias, setDuracionDias] = useState('');
@@ -59,68 +74,88 @@ export function MisionScreen({ nave, alVolver }: PropsMisionScreen) {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={estilos.contenedor}
-      keyboardShouldPersistTaps="handled"
-    >
-      <Pressable onPress={alVolver} accessibilityRole="button">
-        <Text style={estilos.volver}>‹ Volver a la flota</Text>
-      </Pressable>
-
-      <Text style={estilos.titulo}>Asignar misión</Text>
-      <Text style={estilos.nave}>Nave: {nave.nombre}</Text>
-
-      <CampoTexto etiqueta="Destino" valor={destino} alCambiar={setDestino} />
-      <CampoTexto
-        etiqueta="Fecha de despegue"
-        valor={fechaDespegue}
-        alCambiar={setFechaDespegue}
-        sugerencia="AAAA-MM-DD"
-        teclado="numbers-and-punctuation"
-      />
-      <CampoTexto
-        etiqueta="Duración (días)"
-        valor={duracionDias}
-        alCambiar={setDuracionDias}
-        teclado="numbers-and-punctuation"
-      />
-
-      <Pressable
-        onPress={() => void asignar()}
-        disabled={guardando}
-        accessibilityRole="button"
-        style={[estilos.boton, guardando && estilos.botonInactivo]}
+    <SafeAreaView style={estilos.pantalla} edges={['top', 'bottom']}>
+      <ScrollView
+        contentContainerStyle={estilos.contenedor}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={estilos.textoBoton}>
-          {guardando ? 'Guardando…' : 'Asignar misión'}
-        </Text>
-      </Pressable>
+        <Boton
+          texto="‹ Volver"
+          variante="texto"
+          alPresionar={alVolver}
+          etiquetaAccesible="Volver a la flota"
+        />
 
-      {errores.map((error) => (
-        <Text key={error} style={estilos.error}>
-          {error}
+        <Text style={estilos.titulo} accessibilityRole="header">
+          Asignar misión
         </Text>
-      ))}
-      {confirmacion !== '' && (
-        <Text style={estilos.confirmacion}>{confirmacion}</Text>
-      )}
-    </ScrollView>
+
+        <View style={estilos.resumen}>
+          <Text style={estilos.nombre}>{nave.nombre}</Text>
+          <InsigniaAptitud resultado={aptitud} />
+          <MedidorCombustible porcentaje={nave.combustible} />
+        </View>
+
+        <CampoTexto etiqueta="Destino" valor={destino} alCambiar={setDestino} />
+        <SelectorFecha
+          etiqueta="Fecha de despegue"
+          valor={fechaDespegue}
+          alCambiar={setFechaDespegue}
+          minimo={medianocheDeHoy()}
+        />
+        <CampoTexto
+          etiqueta="Duración (días)"
+          valor={duracionDias}
+          alCambiar={(nueva) =>
+            setDuracionDias((anterior) => entradaSoloDigitos(anterior, nueva))
+          }
+          teclado="number-pad"
+        />
+
+        <Boton
+          texto="Asignar misión"
+          alPresionar={() => void asignar()}
+          cargando={guardando}
+        />
+
+        {errores.map((error) => (
+          <Text key={error} style={estilos.error} accessibilityRole="alert">
+            ✕ {error}
+          </Text>
+        ))}
+        {confirmacion !== '' && (
+          <Text style={estilos.confirmacion} accessibilityRole="alert">
+            ✓ {confirmacion}
+          </Text>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const estilos = StyleSheet.create({
-  contenedor: { padding: 16, paddingTop: 56 },
-  volver: { color: '#1f4e79', fontSize: 16, marginBottom: 12 },
-  titulo: { fontSize: 26, fontWeight: '700', marginBottom: 8 },
-  nave: { fontSize: 16, fontWeight: '600', marginBottom: 16 },
-  boton: {
-    backgroundColor: '#1f4e79',
-    borderRadius: 6,
-    paddingVertical: 12,
-    alignItems: 'center',
+  pantalla: { flex: 1, backgroundColor: colores.fondo },
+  contenedor: { padding: espacio.l },
+  titulo: {
+    ...texto.titulo,
+    color: colores.tinta,
+    marginTop: espacio.s,
+    marginBottom: espacio.l,
   },
-  botonInactivo: { opacity: 0.5 },
-  textoBoton: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
-  error: { color: '#b3261e', marginTop: 8 },
-  confirmacion: { color: '#1b6e3c', marginTop: 8 },
+  resumen: {
+    backgroundColor: colores.superficie,
+    borderWidth: 1,
+    borderColor: colores.borde,
+    borderRadius: radio.tarjeta,
+    padding: espacio.l,
+    gap: espacio.m,
+    marginBottom: espacio.xl,
+  },
+  nombre: { ...texto.nombre, color: colores.tinta },
+  error: { ...texto.cuerpo, color: colores.noApta, marginTop: espacio.s },
+  confirmacion: {
+    ...texto.cuerpo,
+    color: colores.apta,
+    marginTop: espacio.s,
+  },
 });

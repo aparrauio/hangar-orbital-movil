@@ -36,12 +36,36 @@ Como jefe de hangar, quiero registrar una nave nueva, para que forme parte de la
 | CA-1.1.9 | una nave registrada con nombre Aurora | el jefe intenta registrar otra nave con nombre Aurora | la nueva nave no se registra, se le informa que el nombre ya existe y Aurora no cambia |
 
 ### HU-1.2 · Ver las naves registradas
-**Estado:** por refinar.
+**Estado:** refinada para el sprint de interfaz. Spec: `docs/specs/02-interfaz.md` (tickets T-09 a T-12).
 
-Como jefe de hangar, quiero ver las naves registradas, para saber con qué flota cuento.
+Como jefe de hangar, quiero ver las naves registradas, para saber con qué flota cuento y cuáles pueden recibir misiones.
 
-- **Validación:** dentro de alcance, punto 4 (parte de consulta asignada a E1). La lista de `FlotaScreen` en la spec 01 adelanta parte de esta historia.
-- **Depende de:** HU-1.1.
+- **Validación:** dentro de alcance, punto 4 (parte de consulta asignada a E1). La lista de `FlotaScreen` en la spec 01 adelantó parte de esta historia.
+- **Depende de:** HU-1.1 y HU-1.3.
+
+**Reglas del PRD:**
+- Una nave admite como máximo 3 misiones entre revisiones.
+- Una nave con menos de 25 % de combustible no puede recibir misiones. Con exactamente 25 % sí puede.
+- Una nave en dique seco no puede recibir misiones.
+- [SUPUESTO] Cuando una nave no puede recibir misiones, la app indica el motivo.
+
+**Criterios de aceptación:**
+
+| Id | DADO | CUANDO | ENTONCES |
+|---|---|---|---|
+| CA-1.2.1 | naves registradas | el jefe abre la flota | cada nave muestra nombre, clase, combustible, misiones desde su revisión ("N de 3") y fecha de última revisión |
+| CA-1.2.2 | una nave con 25 % o más de combustible, menos de 3 misiones desde su revisión y fuera de reparación | el jefe ve la lista | la nave muestra "Puede recibir misiones" y permite asignarle una misión |
+| CA-1.2.3 | una nave con menos de 25 % de combustible | el jefe ve la lista | la nave muestra "Combustible bajo" y no permite asignarle una misión |
+| CA-1.2.4 | una nave con exactamente 25 % de combustible y menos de 3 misiones | el jefe ve la lista | la nave muestra "Puede recibir misiones" |
+| CA-1.2.5 | una nave con 3 misiones desde su revisión | el jefe ve la lista | la nave muestra "Necesita revisión" y no permite asignarle una misión |
+| CA-1.2.6 | una nave en reparación | el jefe ve la lista | la nave muestra "En reparación" y no permite asignarle una misión |
+| CA-1.2.7 | la lista se está cargando | el jefe abre la flota | se muestra un indicador de carga con un mensaje, no la lista vacía |
+| CA-1.2.8 | no hay naves registradas | el jefe abre la flota | se muestra un mensaje de que todavía no hay naves |
+| CA-1.2.9 | la lista no se pudo cargar | el jefe abre la flota sin conexión | se muestra un mensaje de error con la acción "Reintentar", que vuelve a cargar la lista |
+
+**Límites de comprobación:**
+- CA-1.2.6 solo se puede comprobar de punta a punta cuando E2 permita registrar la entrada a dique seco.
+- CA-1.2.8 necesita un proyecto de Firestore sin naves, porque las reglas no permiten borrarlas.
 
 ### HU-1.3 · Asignar una misión a una nave
 **Estado:** refinada para el sprint.
@@ -50,11 +74,12 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 
 - **Validación:** dentro de alcance, punto 3. La misión cuenta desde que se asigna y no cambia el combustible de la nave.
 - **Depende de:** HU-1.1.
-- **Puntos abiertos que la afectan:** 4 (nave con menos de 25 %) y 9 (misiones con fechas superpuestas).
+- **Puntos abiertos que la afectan:** 9 (misiones con fechas superpuestas). El punto 4 (nave con menos de 25 %) lo resolvió el cliente el 2026-11-12.
 
 **Reglas del PRD:**
 - Una nave admite como máximo 3 misiones entre revisiones: si ya tiene 3, no recibe otra hasta su próxima revisión.
 - Cuentan todas las misiones asignadas desde la última revisión, ya realizadas o programadas.
+- Una nave con menos de 25 % de combustible no puede recibir misiones. Con exactamente 25 % sí puede. Las misiones que ya tenía siguen contando.
 - Una nave en dique seco no puede recibir misiones.
 - Asignar una misión no cambia el combustible: se actualiza a mano.
 
@@ -79,10 +104,21 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 | CA-1.3.10 | una nave que puede recibir misiones | el jefe indica una duración de 0 días | la misión no se asigna y se le informa que el mínimo es 1 día |
 | CA-1.3.11 | una nave que puede recibir misiones | el jefe indica una duración de 1 día | la misión se asigna |
 | CA-1.3.12 | una nave que puede recibir misiones | el jefe indica una duración de 1,5 días | la misión no se asigna y se le informa que debe ser un número entero de días |
+| CA-1.3.13 | una nave con menos de 25 % de combustible | el jefe intenta asignarle una misión | la misión no se asigna y se le informa que el combustible no alcanza |
+| CA-1.3.14 | una nave con exactamente 25 % de combustible | el jefe le asigna una misión válida | la misión se asigna |
+| CA-1.3.15 | la pantalla de asignar misión | el jefe toca el campo de fecha de despegue | se abre el calendario del sistema y, al elegir un día, el campo lo muestra como `20/11/2026` |
+| CA-1.3.16 | el calendario abierto | el jefe intenta elegir un día anterior a hoy | el calendario no lo permite; hoy sí se puede elegir |
+| CA-1.3.17 | el campo de duración | el jefe escribe o pega texto que tiene letras, espacios, comas, puntos, signos u otros caracteres que no son dígitos | el campo no lo acepta y conserva el valor anterior |
+| CA-1.3.18 | el campo de duración | el jefe lo toca | se abre un teclado solo numérico |
+
+**Decisiones del cliente (2026-11-12, spec 03):**
+- La fecha de despegue se elige con el calendario nativo del sistema (`@react-native-community/datetimepicker`).
+- La duración acepta únicamente dígitos.
 
 **Límites de comprobación:**
 - CA-1.3.5 solo se puede comprobar cuando E2 permita registrar la entrada a dique seco.
 - CA-1.3.6 se comprueba con el combustible que muestra la lista de naves de `FlotaScreen`.
+- CA-1.3.8 y CA-1.3.12 ya no se pueden reproducir desde la pantalla, porque el calendario y el filtro de dígitos lo impiden. Se siguen verificando con Vitest sobre `validarMision`.
 
 ### HU-1.4 · Impedir una cuarta misión sin revisión
 **Estado:** por refinar. CA-1.3.3 y CA-1.3.4 ya cubren su regla.
@@ -122,7 +158,7 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 
 ## Tickets del sprint
 
-**Spec:** `docs/specs/01-flota-y-misiones.md` cubre HU-1.1 y HU-1.3. T-02, T-03, T-05 y T-06 se implementan según esa spec, y cada criterio se verifica como indica su sección 8.
+**Spec:** `docs/specs/01-flota-y-misiones.md` cubre HU-1.1 y HU-1.3. T-02, T-03, T-05 y T-06 se implementan según esa spec, y cada criterio se verifica como indica su sección 8. `docs/specs/02-interfaz.md` cubre HU-1.2 (T-09 a T-12), y `docs/specs/03-fecha-y-duracion.md` cubre el calendario y la duración de HU-1.3 (T-13 y T-14). Los tickets de esas dos specs están definidos en ellas.
 
 ### T-01 · Preparar la base del proyecto
 - **Historia:** HU-1.1
@@ -215,6 +251,21 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
   - [ ] Los defectos encontrados están corregidos o anotados.
   - [ ] `npm test` y `npx tsc --noEmit` pasan.
 
+### T-08 · Combustible mínimo para recibir misiones
+- **Historia:** HU-1.3
+- **Tipo:** Modelo/Dominio
+- **Descripción:** capas `src/dominio/` y `src/screens/`, y `firestore.rules`. Impedir que una nave con menos de 25 % de combustible reciba misiones, según la decisión del cliente del 2026-11-12 (hallazgo H-02 de `docs/AUDITORIA.md`).
+- **Dependencias:** T-05, T-06.
+- **Definition of Done:**
+  - [ ] `puedeRecibirMision` rechaza con `combustible-bajo` una nave con 24 % y admite una con 25 % (CA-1.3.13 y CA-1.3.14).
+  - [ ] Los motivos se evalúan en el orden de la spec: reparación, combustible y límite de misiones.
+  - [ ] El combustible no cambia el conteo de misiones desde la última revisión.
+  - [ ] El jefe ve el mensaje de `combustible-bajo` de la spec.
+  - [ ] `firestore.rules` rechaza misiones para naves con menos de 25 %.
+  - [ ] CA-1.3.13 se comprobó en Expo Go.
+  - [ ] `src/dominio/` no importa `react-native` ni `firebase`, y no se usa `any`.
+  - [ ] `npm test` y `npx tsc --noEmit` pasan.
+
 ### Orden de ejecución sugerido
 1. T-01
 2. T-02
@@ -222,3 +273,6 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 4. T-04
 5. T-06
 6. T-07
+7. T-08
+8. T-09 a T-12 (spec 02)
+9. T-13 y T-14 (spec 03)
