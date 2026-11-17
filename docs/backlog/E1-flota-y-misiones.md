@@ -106,10 +106,19 @@ Como jefe de hangar, quiero asignar una misión a una nave, para dejar constanci
 | CA-1.3.12 | una nave que puede recibir misiones | el jefe indica una duración de 1,5 días | la misión no se asigna y se le informa que debe ser un número entero de días |
 | CA-1.3.13 | una nave con menos de 25 % de combustible | el jefe intenta asignarle una misión | la misión no se asigna y se le informa que el combustible no alcanza |
 | CA-1.3.14 | una nave con exactamente 25 % de combustible | el jefe le asigna una misión válida | la misión se asigna |
+| CA-1.3.15 | la pantalla de asignar misión | el jefe toca el campo de fecha de despegue | se abre el calendario del sistema y, al elegir un día, el campo lo muestra como `20/11/2026` |
+| CA-1.3.16 | el calendario abierto | el jefe intenta elegir un día anterior a hoy | el calendario no lo permite; hoy sí se puede elegir |
+| CA-1.3.17 | el campo de duración | el jefe escribe o pega texto que tiene letras, espacios, comas, puntos, signos u otros caracteres que no son dígitos | el campo no lo acepta y conserva el valor anterior |
+| CA-1.3.18 | el campo de duración | el jefe lo toca | se abre un teclado solo numérico |
+
+**Decisiones del cliente (2026-11-12, spec 03):**
+- La fecha de despegue se elige con el calendario nativo del sistema (`@react-native-community/datetimepicker`).
+- La duración acepta únicamente dígitos.
 
 **Límites de comprobación:**
 - CA-1.3.5 solo se puede comprobar cuando E2 permita registrar la entrada a dique seco.
 - CA-1.3.6 se comprueba con el combustible que muestra la lista de naves de `FlotaScreen`.
+- CA-1.3.8 y CA-1.3.12 ya no se pueden reproducir desde la pantalla, porque el calendario y el filtro de dígitos lo impiden. Se siguen verificando con Vitest sobre `validarMision`.
 
 ### HU-1.4 · Impedir una cuarta misión sin revisión
 **Estado:** por refinar. CA-1.3.3 y CA-1.3.4 ya cubren su regla.
@@ -149,7 +158,7 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 
 ## Tickets del sprint
 
-**Spec:** `docs/specs/01-flota-y-misiones.md` cubre HU-1.1 y HU-1.3. T-02, T-03, T-05 y T-06 se implementan según esa spec, y cada criterio se verifica como indica su sección 8.
+**Spec:** `docs/specs/01-flota-y-misiones.md` cubre HU-1.1 y HU-1.3. T-02, T-03, T-05 y T-06 se implementan según esa spec, y cada criterio se verifica como indica su sección 8. `docs/specs/02-interfaz.md` cubre HU-1.2 (T-09 a T-12), y `docs/specs/03-fecha-y-duracion.md` cubre el calendario y la duración de HU-1.3 (T-13 y T-14). Los tickets de esas dos specs están definidos en ellas.
 
 ### T-01 · Preparar la base del proyecto
 - **Historia:** HU-1.1
@@ -265,3 +274,5 @@ Como jefe de hangar, quiero cancelar una misión asignada, para que la nave no c
 5. T-06
 6. T-07
 7. T-08
+8. T-09 a T-12 (spec 02)
+9. T-13 y T-14 (spec 03)

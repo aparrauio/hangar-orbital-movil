@@ -5,6 +5,8 @@ import { Boton } from '../components/Boton';
 import { CampoTexto } from '../components/CampoTexto';
 import { InsigniaAptitud } from '../components/InsigniaAptitud';
 import { MedidorCombustible } from '../components/MedidorCombustible';
+import { SelectorFecha } from '../components/SelectorFecha';
+import { entradaSoloDigitos } from '../dominio/entradaSoloDigitos';
 import { fechaLocalComoTexto } from '../dominio/fechaLocalComoTexto';
 import { crearMision, type NaveConAptitud } from '../services/misionesService';
 import { colores, espacio, radio, texto } from '../tema';
@@ -18,6 +20,11 @@ import {
 interface PropsMisionScreen {
   nave: NaveConAptitud;
   alVolver: () => void;
+}
+
+function medianocheDeHoy(): Date {
+  const ahora = new Date();
+  return new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
 }
 
 export function MisionScreen({
@@ -90,18 +97,19 @@ export function MisionScreen({
         </View>
 
         <CampoTexto etiqueta="Destino" valor={destino} alCambiar={setDestino} />
-        <CampoTexto
+        <SelectorFecha
           etiqueta="Fecha de despegue"
           valor={fechaDespegue}
           alCambiar={setFechaDespegue}
-          ayuda="AAAA-MM-DD"
-          teclado="numbers-and-punctuation"
+          minimo={medianocheDeHoy()}
         />
         <CampoTexto
           etiqueta="Duración (días)"
           valor={duracionDias}
-          alCambiar={setDuracionDias}
-          teclado="numbers-and-punctuation"
+          alCambiar={(nueva) =>
+            setDuracionDias((anterior) => entradaSoloDigitos(anterior, nueva))
+          }
+          teclado="number-pad"
         />
 
         <Boton

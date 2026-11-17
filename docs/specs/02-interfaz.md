@@ -94,7 +94,7 @@ Mensajes nuevos de la lista, con la voz de `DESIGN.md` §5:
   - Respeta el área segura.
   - Volver con `Boton` variante texto, de 44 de alto.
   - Resumen de la nave con nombre, `InsigniaAptitud` y `MedidorCombustible`.
-  - La fecha usa `ayuda` "AAAA-MM-DD" en lugar de texto de ejemplo.
+  - La fecha usa `ayuda` "AAAA-MM-DD" en lugar de texto de ejemplo. Reemplazado por el calendario de la spec 03.
   - Asignar con `Boton` primario.
 - **Mientras no existan `SelectorClase`, `Aviso` y `EncabezadoPantalla`** (fuera de alcance, §6):
   - El selector de clase sigue en `FlotaScreen`, pero con tokens, alto `toque.minimo` y `nombreClase`.
@@ -138,8 +138,8 @@ La aptitud que muestra la lista es la del momento de la carga. La decisión fina
 - Cambiar `firestore.rules` o `src/dominio/`.
 - Los componentes `SelectorClase`, `Aviso` y `EncabezadoPantalla` de `DESIGN.md` §3.
 - Librerías de navegación, de UI o de íconos.
-- Cualquier dependencia distinta de `react-native-safe-area-context`.
-- Las decisiones pendientes de `DESIGN.md` §8: selector de fecha nativo, modo oscuro e íconos.
+- Cualquier dependencia distinta de `react-native-safe-area-context`. La spec 03 agrega después `@react-native-community/datetimepicker`.
+- Las decisiones pendientes de `DESIGN.md` §8: selector de fecha nativo, modo oscuro e íconos. El selector de fecha lo resuelve después la spec 03.
 - Mostrar o cancelar las misiones de una nave (HU-1.6 y HU-1.7).
 
 ## 6. Criterio → verificación
